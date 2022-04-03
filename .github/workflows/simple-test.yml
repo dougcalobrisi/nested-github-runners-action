@@ -1,0 +1,37 @@
+name: Simple Test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" 
+    
+jobs:
+  create-nested-runners:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          path: nested-github-runners-action/
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Run nested-github-runners-action
+        uses: ./nested-github-runners-action/
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          runners: 3
+  job1:
+    runs-on: nested-${{ github.run_id }}
+    steps:
+      - name: echo hostname
+        run: echo `hostname`
+  job2:
+    runs-on: nested-${{ github.run_id }}
+    steps:
+      - name: echo hostname
+        run: echo `hostname`
+  job3:
+    runs-on: nested-${{ github.run_id }}
+    steps:
+      - name: echo hostname
+        run: echo `hostname`

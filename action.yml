@@ -1,0 +1,57 @@
+name: Created Nested Runners
+description: Create Runners
+
+inputs: 
+  github-token:
+    description: 'GitHub token'
+    required: true
+  runners:
+    description: 'Number of runners'
+    required: true
+    default: '1'
+  runner-image:
+    description: 'Docker runner image'
+    required: false
+    default: 'dougcalobrisi/nested-github-runner:latest'
+  runner-prefix:
+    description: 'Prefix to use for runner name'
+    required: false
+    default: 'nested'
+  runner-label:
+    description: 'Label to give all runners'
+    required: false
+    default: 'nested'
+  shared-volume:
+    description: 'Shared volume path on runner or disable'
+    required: false
+    default: '/shared'
+  shared-volume-host-path:
+    description: 'Shared volume path on host'
+    required: false
+    default: '/shared'
+  docker-in-docker:
+    description: 'Disable Docker-in-Docker'
+    required: false
+    default: 'true'
+  
+runs:
+  using: "composite"
+  steps:
+
+  - name: Install python dependencies
+    shell: bash
+    run: pip3 install docker
+
+  - name: Run create-runners.py
+    shell: bash
+    env:
+      INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+      INPUT_RUNNERS: ${{ inputs.runners }}
+      INPUT_RUNNER_PREFIX: ${{ inputs.runner-prefix }}
+      INPUT_RUNNER_LABEL: ${{ inputs.runner-label }}
+      INPUT_SHARED_VOLUME: ${{ inputs.shared-volume }}
+      INPUT_SHARED_VOLUME_HOST_PATH: ${{ inputs.shared-volume-host-path }}
+      INPUT_RUNNER_IMAGE: ${{ inputs.runner-image }}
+      INPUT_DOCKER_IN_DOCKER: ${{ inputs.docker-in-docker }}
+    run: python3 ${{ github.action_path }}/create-runners.py
+      

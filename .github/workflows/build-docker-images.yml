@@ -1,0 +1,28 @@
+name: Build Docker Images
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *" 
+
+jobs:
+  build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Login to Docker
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Base Image
+        run: |
+          docker build -t dougcalobrisi/nested-github-runner-base -f docker/Dockerfile.base docker/
+
+      - name: Build and Push Runner Image
+        run: |
+          docker build -t dougcalobrisi/nested-github-runner -f docker/Dockerfile docker/
+          docker push dougcalobrisi/nested-github-runner
+
+

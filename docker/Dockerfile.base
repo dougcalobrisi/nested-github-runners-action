@@ -1,0 +1,64 @@
+FROM ubuntu:focal
+LABEL maintainer="doug@calobrisi.com"
+
+ARG DUMB_INIT_VERSION="1.2.2"
+ARG GIT_CORE_PPA_KEY="A1715D88E1DF1F24"
+ARG DOCKER_KEY="7EA0A9C3F273FCD8"
+
+ENV DOCKER_COMPOSE_VERSION="1.27.4"
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ENV DEBIAN_FRONTEND=noninteractive
+# hadolint ignore=DL3003,DL4001,SC2086
+RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends gnupg \
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${GIT_CORE_PPA_KEY} \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends \
+    curl \
+    tar \
+    unzip \
+    apt-transport-https \
+    ca-certificates \
+    sudo \
+    gpg-agent \
+    software-properties-common \
+    build-essential \
+    zlib1g-dev \
+    zstd \
+    gettext \
+    libcurl4-openssl-dev \
+    inetutils-ping \
+    jq \
+    wget \
+    dirmngr \
+    openssh-client \
+    locales \
+    python3-pip \
+    python3-setuptools \
+    python3 \
+    dumb-init \
+  && sed -e 's/Defaults.*env_reset/Defaults env_keep = "HTTP_PROXY HTTPS_PROXY NO_PROXY FTP_PROXY http_proxy https_proxy no_proxy ftp_proxy"/' -i /etc/sudoers \
+  && echo deb http://ppa.launchpad.net/git-core/ppa/ubuntu $([[ $(grep -E '^ID=' /etc/os-release | sed 's/.*=//g') == "ubuntu" ]] && (grep VERSION_CODENAME /etc/os-release | sed 's/.*=//g') || echo bionic) main>/etc/apt/sources.list.d/git-core.list \
+  && apt-get update \
+  && ( apt-get install -y --no-install-recommends git || apt-get install -t stable -y --no-install-recommends git || apt-get install -y --no-install-recommends git=1:2.33.1-0ppa1~ubuntu18.04.1 git-man=1:2.33.1-0ppa1~ubuntu18.04.1 ) \
+  && ( [[ $(apt-cache search -n liblttng-ust0 | awk '{print $1}') == "liblttng-ust0" ]] && apt-get install -y --no-install-recommends liblttng-ust0 || : ) \
+  && ( [[ $(apt-cache search -n liblttng-ust1 | awk '{print $1}') == "liblttng-ust1" ]] && apt-get install -y --no-install-recommends liblttng-ust1 || : ) \
+  && ( ( curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "awscliv2.zip" && unzip awscliv2.zip -d /tmp/ && /tmp/aws/install ) || pip3 install awscli ) \
+  # Determine the Distro name (Debian, Ubuntu, etc)
+  && distro=$(lsb_release -is | awk '{print tolower($0)}') \
+  # Determine the Distro version (bullseye, xenial, etc)
+  # Note: sid is aliased to bullseye, because Docker doesn't have a matching apt repo
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${DOCKER_KEY} \
+  && curl -fsSL https://download.docker.com/linux/${distro}/gpg | apt-key add - \
+  && version=$(lsb_release -cs | awk '{gsub("sid", "bullseye"); print $0}') \
+  && ( add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/${distro} ${version} stable" ) \
+  && apt-get update \
+  && apt-get install -y docker-ce docker-ce-cli containerd.io --no-install-recommends --allow-unauthenticated \
+  && [[ $(lscpu -J | jq -r '.lscpu[] | select(.field == "Vendor ID:") | .data') == "ARM" ]] && echo "Not installing docker-compose. See https://github.com/docker/compose/issues/6831" || ( curl -sL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose ) \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* \
+  && rm -rf /tmp/*
