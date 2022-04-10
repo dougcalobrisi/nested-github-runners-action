@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Multiple GitHub Runners in Runner
-        uses: dougcalobrisi/nested-github-runners-action@v0.8
+        uses: dougcalobrisi/nested-github-runners-action@v0.9
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           runners: 3
@@ -37,7 +37,7 @@ jobs:
 ### Examples
 
 #### Building git 
-In this test, we build `git` in multiple parallel jobs, with either 3 or 4 concurrent builds. We can see while the cost savings comes at the expense of overall time, by adding additional hosted runners with `nested-github-runners-action`, we can save up to 50% while only slightly increasing overall time. 
+In this test, we build `git` in multiple parallel jobs, with either 3 or 4 concurrent builds. We can see while the cost savings comes at the expense of overall time, we can save up to 50% while only slightly increasing overall time, by adding additional hosted runners with `nested-github-runners-action`. 
 | Nested?    | Parallel Jobs | Hosted Runners | Total Time     | Billable Time   | Cost          | Savings   |
 | :--------: | :-----------: | :------------: | :------------: | :-------------: | :-----------: | :-------: |
 | no         | 3             | 3              | 3m 17s         | 12m             | $0.096        | na        |
@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Multiple GitHub Runners in Runner
-        uses: dougcalobrisi/nested-github-runners-action@v0.8
+        uses: dougcalobrisi/nested-github-runners-action@v0.9
         with:
           github-token: ${{ secrets.GH_TOKEN }}
           runners: 4
@@ -135,8 +135,8 @@ jobs:
   create-runners:
     runs-on: ubuntu-latest
     steps:
-    - name: Create Runners 
-      uses: dougcalobrisi/nested-github-runners-action@v0.8
+    - name: Run Multiple GitHub Runners in Runner
+      uses: dougcalobrisi/nested-github-runners-action@v0.9
       with:
         runners: 3
         github-token: ${{ secrets.GH_TOKEN }}
@@ -165,8 +165,8 @@ jobs:
 
 ### Example of Using All Inputs
 ```
-- name: Create Runners 
-  uses: dougcalobrisi/nested-github-runners-action@v0.8
+- name: Run Multiple GitHub Runners in Runner
+  uses: dougcalobrisi/nested-github-runners-action@v0.9
   with:
     runners: 3
     github-token: ${{ secrets.GH_TOKEN }}
