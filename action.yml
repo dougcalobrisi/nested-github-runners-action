@@ -1,5 +1,9 @@
-name: Created Nested Runners
-description: Create Runners
+name: Nested GitHub Runners Action
+description: Creates Nested GitHub Runners in a Workflow
+
+branding:
+  icon: 'plus'
+  color: 'orange'
 
 inputs: 
   github-token:
@@ -42,7 +46,7 @@ runs:
     shell: bash
     run: pip3 install docker
 
-  - name: Run create-runners.py
+  - name: Run nested-github-runners.py
     shell: bash
     env:
       INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
@@ -53,5 +57,5 @@ runs:
       INPUT_SHARED_VOLUME_HOST_PATH: ${{ inputs.shared-volume-host-path }}
       INPUT_RUNNER_IMAGE: ${{ inputs.runner-image }}
       INPUT_DOCKER_IN_DOCKER: ${{ inputs.docker-in-docker }}
-    run: python3 ${{ github.action_path }}/create-runners.py
+    run: python3 ${{ github.action_path }}/nested-github-runners.py
       
